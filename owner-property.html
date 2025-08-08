@@ -1,1 +1,93 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Set character encoding and make page responsive on all devices -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- Page title that appears in the browser tab -->
+  <title>Shared Workspace – My Properties</title>
+  
+  <!-- Link to external CSS file for styling -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Link to external JavaScript file that runs after page loads -->
+  <script defer src="app.js"></script>
+</head>
+
+<body>
+  <!-- Header section with website name and navigation links -->
+  <header>
+    <div class="container">
+      <div class="brand">Shared Workspace</div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="owner-workspace.html">My Workspaces</a></li>
+          <li><a href="search.html">Search</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main content area -->
+  <main class="center-form">
+    <div class="container">
+      <section class="hero">
+        <!-- Title and message for owners -->
+        <h1>Add a property</h1>
+        <p>Only owners should use this page. Make sure you’re logged in as an owner.</p>
+
+        <!-- Form to add a new property -->
+        <form onsubmit="App.addProperty(event)">
+          <!-- Address input -->
+          <label for="address">Address</label>
+          <input id="address" name="address" required />
+
+          <!-- Neighborhood input -->
+          <label for="neighborhood">Neighborhood</label>
+          <input id="neighborhood" name="neighborhood" required />
+
+          <!-- Square feet input -->
+          <label for="sqft">Square Feet</label>
+          <input id="sqft" name="sqft" type="number" min="0" required />
+
+          <!-- Checkboxes for parking and transit options -->
+          <label><input type="checkbox" name="parking" /> Parking available</label>
+          <label><input type="checkbox" name="transit" /> Near public transit</label>
+
+          <!-- Submit and next page buttons -->
+          <div class="actions">
+            <button class="button primary" type="submit">Add Property</button>
+            <a class="button" href="owner-workspace.html">Next: Add Workspaces</a>
+          </div>
+        </form>
+
+        <!-- Line to separate the two forms -->
+        <hr style="margin:16px 0"/>
+
+        <!-- Form to add a photo to an existing property -->
+        <h3>Add photo to a property (by Property ID)</h3>
+        <form onsubmit="App.addPropertyPhoto(event)">
+          <!-- Property ID input -->
+          <label>Property ID</label>
+          <input name="propId" required />
+          
+          <!-- Photo URL input -->
+          <label>Photo URL</label>
+          <input name="url" type="url" required placeholder="https://..." />
+          
+          <!-- Submit button for photo form -->
+          <div class="actions"><button class="button" type="submit">Add Photo</button></div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer section with copyright -->
+  <footer>
+    <div class="container">© 2025 Shared Workspace • Phase 1</div>
+  </footer>
+</body>
+</html>
