@@ -112,8 +112,7 @@ app.get('/api/workspaces', (req, res) => {
   res.json(ok(list));
 });
 
-// ===== BONUS endpoints =====
-// Property photo: body { url }
+// BONUS endpoints Property photo: body { url }
 app.post('/api/properties/:id/photos', (req, res) => {
   const p = properties.find(x => x.id === req.params.id);
   if (!p) return res.json(fail('Property not found'));
@@ -167,5 +166,6 @@ app.post('/api/users/:id/ratingsFromOwner', (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
 
 
