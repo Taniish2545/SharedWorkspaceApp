@@ -1,1 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Character encoding and responsive viewport settings -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- Page title -->
+  <title>Shared Workspace – My Workspaces</title>
+  
+  <!-- Link to external CSS for styling -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Link to external JavaScript file -->
+  <script defer src="app.js"></script>
+</head>
 
+<body>
+  <!-- Header section with site name and navigation links -->
+  <header>
+    <div class="container">
+      <div class="brand">Shared Workspace</div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="owner-property.html">My Properties</a></li>
+          <li><a href="search.html">Search</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main content area - centered form -->
+  <main class="center-form">
+    <div class="container">
+      <section class="hero">
+        <!-- Page heading and instructions -->
+        <h1>Add a workspace</h1>
+        <p>Enter the <strong>Property ID</strong> for the property you created, then fill the workspace details.</p>
+
+        <!-- Form to add a workspace -->
+        <form onsubmit="App.addWorkspace(event)" style="margin-top:16px">
+          <!-- Property ID input -->
+          <label for="propertyId">Property ID</label>
+          <input id="propertyId" name="propertyId" required />
+
+          <!-- Workspace type input -->
+          <label for="type">Type (meeting/private/desk)</label>
+          <input id="type" name="type" placeholder="meeting / private / desk" required />
+
+          <!-- Number of seats -->
+          <label for="seats">Seats</label>
+          <input id="seats" name="seats" type="number" min="1" required />
+
+          <!-- Checkbox for smoking allowed -->
+          <label><input type="checkbox" name="smoking" /> Smoking allowed</label>
+
+          <!-- Available from date -->
+          <label for="availableFrom">Available From</label>
+          <input id="availableFrom" name="availableFrom" type="date" required />
+
+          <!-- Lease term input -->
+          <label for="term">Lease Term (day/week/month)</label>
+          <input id="term" name="term" placeholder="day / week / month" required />
+
+          <!-- Price input -->
+          <label for="price">Price</label>
+          <input id="price" name="price" type="number" min="0" required />
+
+          <!-- Submit button and back link -->
+          <div class="actions">
+            <button class="button primary" type="submit">Add Workspace</button>
+            <a class="button" href="owner-property.html">Back to Properties</a>
+          </div>
+        </form>
+
+        <!-- Line to separate workspace form and photo form -->
+        <hr style="margin:20px 0"/>
+
+        <!-- Section to add photo to an existing workspace -->
+        <h3>Add photo to a workspace (by Workspace ID)</h3>
+        <p>After you create a workspace, copy its ID from the API list and add a photo URL.</p>
+        <form onsubmit="App.addWorkspacePhoto(event)">
+          <!-- Workspace ID input -->
+          <label>Workspace ID</label>
+          <input name="wsId" required />
+          
+          <!-- Photo URL input -->
+          <label>Photo URL</label>
+          <input name="url" type="url" required placeholder="https://..." />
+          
+          <!-- Submit button for photo form -->
+          <div class="actions"><button class="button" type="submit">Add Photo</button></div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer section -->
+  <footer>
+    <div class="container">© 2025 Shared Workspace • Phase 1</div>
+  </footer>
+</body>
+</html>
