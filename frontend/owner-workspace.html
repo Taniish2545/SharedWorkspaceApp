@@ -1,1 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Character encoding and responsive viewport settings -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- Page title -->
+  <title>Shared Workspace – My Workspaces</title>
+  
+  <!-- Link to external CSS for styling -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Link to external JavaScript file -->
+  <script defer src="app.js"></script>
+</head>
 
+<body>
+  <!-- Header section with site name and navigation links -->
+  <header>
+    <div class="container">
+      <div class="brand">Shared Workspace</div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="owner-property.html">My Properties</a></li>
+          <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main content area - centered form -->
+  <main class="center-form">
+    <div class="container">
+      <section class="hero">
+        <!-- Page heading and instructions -->
+        <h1>Add a workspace</h1>
+        <p>Enter the <strong>Property ID</strong> for the property you created, then fill the workspace details.</p>
+
+        <!-- Form to add a workspace -->
+       <form id="workspaceForm" onsubmit="App.addWorkspace(event)" style="margin-top:16px">
+      <!-- Select property -->
+      <label for="propertyId">Select Property</label>
+      <select id="propertyId" name="propertyId" required>
+      <option value="">-- Select one of your properties --</option>
+      <!-- Populated dynamically -->
+      </select>
+
+      <!-- Workspace type -->
+      <label for="type">Workspace Type</label>
+      <select id="type" name="type" required>
+      <option value="">-- Select type --</option>
+      <option value="Private Office">Private Office</option>
+      <option value="Dedicated Desk">Dedicated Desk</option>
+      <option value="Hot Desk">Hot Desk</option>
+      <option value="Meeting Room">Meeting Room</option>
+      </select>
+
+  <!-- Number of seats -->
+  <label for="seats">Seats</label>
+  <input id="seats" name="seats" type="number" min="1" max="500" required />
+
+  <!-- Smoking allowed -->
+  <label><input type="checkbox" id="smoking" name="smoking" /> Smoking allowed</label>
+
+  <!-- Available from date -->
+  <label for="availableFrom">Available From</label>
+  <input id="availableFrom" name="availableFrom" type="date" required />
+
+  <!-- Lease term -->
+  <label for="term">Lease Term</label>
+  <select id="term" name="term" required>
+    <option value="">-- Select term --</option>
+    <option value="Daily">Daily</option>
+    <option value="Weekly">Weekly</option>
+    <option value="Monthly">Monthly</option>
+    <option value="Yearly">Yearly</option>
+  </select>
+
+  <!-- Price -->
+  <label for="price">Price ($)</label>
+  <input id="price" name="price" type="number" min="50" max="10000" required />
+
+  <!-- Submit -->
+  <div class="actions">
+    <button class="button primary" type="submit">Add Workspace</button>
+    <a class="button" href="owner-property.html">Back to Properties</a>
+  </div>
+</form>
+
+
+        <!-- Line to separate workspace form and photo form -->
+        <hr style="margin:20px 0"/>
+
+        <!-- Section to add photo to an existing workspace -->
+        <h3>Add photo to a workspace (by Workspace ID)</h3>
+        <p>After you create a workspace, copy its ID from the API list and add a photo URL.</p>
+        <form onsubmit="App.addWorkspacePhoto(event)">
+          <!-- Workspace dropdown -->
+          <label for="wsId">Select Workspace</label>
+          <select id="wsId" name="wsId" required>
+          <option value="">-- Select one of your workspaces --</option>
+          <!-- Dynamically populated -->
+          </select>
+
+          
+          <!-- Photo URL input -->
+          <label>Photo URL</label>
+          <input name="url" type="url" required placeholder="https://..." />
+          
+          <!-- Submit button for photo form -->
+          <div class="actions"><button class="button" type="submit">Add Photo</button></div>
+        </form>
+        <hr style="margin:20px 0"/>
+        <h2>My Workspaces</h2>
+        <ul id="myWorkspaces"></ul>
+      </section>
+    </div>
+  </main>
+
+    <!-- Footer section -->
+  <footer>
+    <div class="container">© 2025 Shared Workspace • Phase 1</div>
+  </footer>
+
+  <!-- Edit Workspace Modal -->
+  <div id="wsEditModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6);">
+    <div style="background:#fff; width:400px; margin:80px auto; padding:20px; border-radius:8px; position:relative">
+      <h3>Edit Workspace</h3>
+      <form onsubmit="App.saveWorkspaceUpdate(event)">
+        <input type="hidden" id="editWsId" />
+
+        <label for="editWsType">Type</label>
+        <input id="editWsType" required />
+
+        <label for="editWsSeats">Seats</label>
+        <input id="editWsSeats" type="number" min="1" required />
+
+        <label for="editWsPrice">Price ($)</label>
+        <input id="editWsPrice" type="number" min="0" required />
+
+        <label for="editWsTerm">Lease Term</label>
+        <select id="editWsTerm" required>
+          <option value="Daily">Daily</option>
+          <option value="Weekly">Weekly</option>
+          <option value="Monthly">Monthly</option>
+          <option value="Yearly">Yearly</option>
+        </select>
+
+        <label><input type="checkbox" id="editWsSmoking" /> Smoking allowed</label>
+
+        <div class="actions">
+          <button class="button primary" type="submit">Save</button>
+         <button class="button" type="button" onclick="document.getElementById('wsEditModal').style.display='none'">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+ <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    App.loadOwnerPropertiesForWorkspace(); 
+    App.loadOwnerWorkspacesForPhoto();   // fills the workspace dropdown
+    App.loadMyWorkspaces();              // shows workspace list for update/delete
+
+  });
+</script>
+<!-- Workspace Details Modal -->
+<div id="wsDetailsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6);">
+  <div style="background:#fff; width:500px; margin:50px auto; padding:20px; border-radius:8px; position:relative; max-height:80%; overflow-y:auto;">
+    <h3>Workspace Details</h3>
+    
+    <p><strong>Type:</strong> <span id="detailType"></span></p>
+    <p><strong>Seats:</strong> <span id="detailSeats"></span></p>
+    <p><strong>Price:</strong> $<span id="detailPrice"></span></p>
+    <p><strong>Lease Term:</strong> <span id="detailTerm"></span></p>
+    <p><strong>Smoking:</strong> <span id="detailSmoking"></span></p>
+    <p><strong>Available From:</strong> <span id="detailAvailable"></span></p>
+
+    <h4>Property Info</h4>
+    <p><strong>Address:</strong> <span id="detailAddress"></span></p>
+    <p><strong>Neighborhood:</strong> <span id="detailNeighborhood"></span></p>
+    <p><strong>Sqft:</strong> <span id="detailSqft"></span></p>
+    <p><strong>Parking:</strong> <span id="detailParking"></span></p>
+    <p><strong>Transit:</strong> <span id="detailTransit"></span></p>
+
+    <h4>Owner Contact</h4>
+    <p><strong>Name:</strong> <span id="detailOwnerName"></span></p>
+    <p><strong>Phone:</strong> <span id="detailOwnerPhone"></span></p>
+    <p><strong>Email:</strong> <span id="detailOwnerEmail"></span></p>
+
+    <div class="actions">
+      <button class="button" type="button" onclick="closeDetails()">Close</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
