@@ -1,4 +1,7 @@
-const API_BASE = 'https://sharedworkspaceapp.onrender.com';
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3000"
+    : "https://sharedworkspaceapp.onrender.com"; // put your real Render URL
 
 // session helpers
 function getUser() { try { return JSON.parse(sessionStorage.getItem('user')); } catch { return null; } }
