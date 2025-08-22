@@ -454,3 +454,253 @@ async function savePropertyUpdate(e) {
     alert("Could not save update.");
   }
 }
+// ===== Close Modal =====
+function closeModal() {
+  document.getElementById("editModal").style.display = "none";
+}
+
+// new function to load owner’s properties into dropdown
+async function loadOwnerPropertiesForWorkspace() {
+  const u = getUser();
+  if (!u || u.role !== 'owner') return;
+
+  const res = await fetch(${API_BASE}/api/properties?ownerId=${encodeURIComponent(u.id)});
+  const out = await res.json();
+
+  const select = document.getElementById('propertyId');
+  if (!select) return;
+
+  select.innerHTML = '<option value="">-- Select one of your properties --</option>';
+  (out.data || []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p._id; // ✅ use MongoDB _id
+    opt.textContent = ${p.address} (${p.neighborhood});
+    select.appendChild(opt);
+  });
+}
+
+function logout() {
+  sessionStorage.removeItem('user');   // clear session
+  alert('You have been logged out.');
+  window.location.href = "login.html";        // redirect to home
+}
+// ================================
+// Page Access Control
+// ================================
+document.addEventListener("DOMContentLoaded", () => {
+  const user = getUser();
+  const path = window.location.pathname;
+
+  // If not logged in → block all restricted pages
+  if (!user) {
+    if (
+      path.includes("owner-property.html") ||
+      path.includes("owner-workspace.html") ||
+      path.includes("add-workspace.html") ||
+      path.includes("search.html") // <— NEW: protect coworker search page
+    ) {
+      alert("You must log in first.");
+      window.location.href = "login.html";
+    }
+  } else {
+    // If logged in as Owner → block coworker-only pages
+    if (user.role === "owner") {
+      if (
+        path.includes("signup.html") ||
+        path.includes("login.html") ||
+        path.includes("search.html") // <— prevent owners from coworker search
+      ) {
+        alert("You are already logged in as Owner.");
+        window.location.href = "owner-property.html";
+      }
+    }
+
+    // If logged in as Coworker → block owner-only pages
+    if (user.role === "coworker") {
+      if (
+        path.includes("owner-property.html") ||
+        path.includes("owner-workspace.html")
+      ) {
+        alert("Coworkers cannot access Owner pages.");
+        window.location.href = "index.html";
+      }
+    }
+  }
+});
+// ================================
+// Role-based Nav Control
+// ================================
+function updateNav() {
+  const user = getUser();
+  const navOwner = document.getElementById("nav-owner");
+  const navCoworker = document.getElementById("nav-coworker");
+  const navGuest = document.getElementById("nav-guest");
+  const browseBtn = document.getElementById("btn-browse"); // <— new
+
+  if (!navOwner || !navCoworker || !navGuest) return; // safety check
+
+  if (!user) {
+    navOwner.style.display = "none";
+    navCoworker.style.display = "none";
+    navGuest.style.display = "block";
+    if (browseBtn) browseBtn.style.display = "none"; // hide
+  } else if (user.role === "owner") {
+    navOwner.style.display = "block";
+    navCoworker.style.display = "none";
+    navGuest.style.display = "none";
+    if (browseBtn) browseBtn.style.display = "none"; // hide
+  } else if (user.role === "coworker") {
+    navOwner.style.display = "none";
+    navCoworker.style.display = "block";
+    navGuest.style.display = "none";
+    if (browseBtn) browseBtn.style.display = "inline-block"; // show
+  }
+}
+
+// Run nav update when page loads
+document.addEventListener("DOMContentLoaded", updateNav);
+// =========================
+// Owner: Workspace list / update / delete
+// =========================
+let _wsCache = [];
+
+async function loadMyWorkspaces() {
+  const u = getUser();
+  if (!u || u.role !== "owner") {
+    const list = document.getElementById("myWorkspaces");
+    if (list) list.innerHTML = "<li>Please log in as an Owner to view your workspaces.</li>";
+    return;
+  }
+
+  try {
+    const res = await fetch(${API_BASE}/api/workspaces?owner=${encodeURIComponent(u.id)});
+    const out = await res.json();
+    _wsCache = out.data || [];
+
+    const list = document.getElementById("myWorkspaces");
+    if (!list) return;
+
+    list.innerHTML =
+      _wsCache.map(ws => {
+        return `
+          <li style="padding:12px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div>
+              <strong>${ws.type}</strong> • Seats: ${ws.seats} • $${ws.price} • ${ws.term} • Smoking: ${ws.smoking}
+              <br/>
+              <small>Property: ${ws.property?.address || "N/A"} (${ws.property?.neighborhood || ""})</small>
+            </div>
+            <div class="actions" style="gap:6px">
+              <button class="button" onclick="App.updateWorkspace('${ws._id}')">Update</button>
+              <button class="button" onclick="App.deleteWorkspace('${ws._id}')">Delete</button>
+            </div>
+          </li>
+        `;
+      }).join("") || "<li>No workspaces yet.</li>";
+
+  } catch (err) {
+    console.error("❌ Error loading workspaces:", err);
+    const list = document.getElementById("myWorkspaces");
+    if (list) list.innerHTML = "<li>Failed to load workspaces.</li>";
+  }
+}
+
+
+// For coworker/global listing (everyone sees all workspaces)
+async function loadAllWorkspaces() {
+  try {
+    const res = await fetch(${API_BASE}/api/workspaces);
+    const out = await res.json();
+    const list = document.getElementById("results"); // ✅ change here
+    if (!list) return;
+
+    list.innerHTML =
+      (out.data || [])
+        .map(ws => {
+          return `
+          <li style="padding:12px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div>
+              <strong>${ws.type}</strong> • Seats: ${ws.seats} • $${ws.price} • ${ws.term} • Smoking: ${ws.smoking}
+              <br/><small>${ws.property?.address || "No address"}</small>
+            </div>
+            <div class="actions" style="gap:6px">
+              <button onclick="viewWorkspace('${ws._id}')">View Details</button>
+            </div>
+          </li>
+        `;
+        })
+        .join("") || "<li>No workspaces available.</li>";
+  } catch (err) {
+    console.error("Failed to load all workspaces", err);
+  }
+}
+
+async function deleteWorkspace(id) {
+  if (!confirm("Are you sure you want to delete this workspace?")) return;
+  try {
+    const res = await fetch(${API_BASE}/api/workspaces/${id}, { method: "DELETE" });
+    const out = await res.json();
+    if (out.success) {
+      alert("Workspace deleted");
+      App.loadMyWorkspaces();
+    } else {
+      alert(out.message || "Delete failed.");
+    }
+  } catch (err) {
+    console.error("❌ Delete error:", err);
+  }
+}
+
+
+async function updateWorkspace(id) {
+  try {
+    const res = await fetch(${API_BASE}/api/workspaces/${id});
+    const out = await res.json();
+    if (!out.success) return alert("Failed to fetch workspace");
+
+    const ws = out.data;
+
+    document.getElementById("editWsId").value = ws._id;
+    document.getElementById("editWsType").value = ws.type;
+    document.getElementById("editWsSeats").value = ws.seats;
+    document.getElementById("editWsPrice").value = ws.price;
+    document.getElementById("editWsTerm").value = ws.term;
+    document.getElementById("editWsSmoking").checked = ws.smoking;
+
+    document.getElementById("wsEditModal").style.display = "block";
+  } catch (err) {
+    console.error("❌ Update error:", err);
+  }
+}
+
+
+async function saveWorkspaceUpdate(e) {
+  e.preventDefault();
+  const id = document.getElementById("editWsId").value;
+
+  const data = {
+    type: document.getElementById("editWsType").value,
+    seats: Number(document.getElementById("editWsSeats").value),
+    price: Number(document.getElementById("editWsPrice").value),
+    term: document.getElementById("editWsTerm").value,
+    smoking: document.getElementById("editWsSmoking").checked,
+  };
+
+  try {
+    const res = await fetch(${API_BASE}/api/workspaces/${id}, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const out = await res.json();
+
+    if (out.success) {
+      alert("Workspace updated!");
+      document.getElementById("wsEditModal").style.display = "none";
+      App.loadMyWorkspaces();
+    } else {
+      alert(out.message || "Update failed.");
+    }
+  } catch (err) {
+    console.error("❌ Save update error:", err);
+  }
+}
