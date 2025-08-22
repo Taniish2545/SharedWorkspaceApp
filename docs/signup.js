@@ -4,7 +4,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
 
   const formData = Object.fromEntries(new FormData(e.target));
 
-  const res = await fetch("http://localhost:3000/api/auth/register", {
+  const res = await fetch("https://sharedworkspaceapp.onrender.com", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(formData)
