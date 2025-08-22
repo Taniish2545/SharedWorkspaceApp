@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import { nanoid } from 'nanoid';
-import connectDB from './db.js';              // default import
+import connectDB from './db.js';
 import authRoutes from './routes/auth.js';
 import secureRoutes from './routes/secure.js';
 import propertyRoutes from './routes/property.js';
@@ -15,49 +15,27 @@ app.use(express.json());
 // health check
 app.get('/', (_req, res) => res.json({ ok: true }));
 
-// mount routers (this also removes the “declared but never read” warning)
+// mount routers
 app.use('/api/auth', authRoutes);
 app.use('/api/secure', secureRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/workspaces", workspaceRoutes);
 
-// Start server with auto-fallback if port is busy
-const START_PORT = Number(process.env.PORT) || 3000;
-function startServer(port) {
-  const server = app.listen(port, () => {
-    console.log(`🚀 Server running on http://localhost:${port}`);
-  });
-
-  server.on("error", (err) => {
-    if (err.code === "EADDRINUSE") {
-      console.log(`⚠️ Port ${port} in use, trying ${port + 1}...`);
-      startServer(port + 1);
-    } else {
-      console.error("Server error:", err);
-      process.exit(1);
-    }
-  });
-}
 // Ensure DB connects first, then start server
 try {
   await connectDB();
   console.log("✅ DB connected");
-  startServer(START_PORT);
+
+  const PORT = process.env.PORT || 3000;
+  const HOST = '0.0.0.0';
+
+  app.listen(PORT, HOST, () => {
+    console.log(`🚀 Server running on :${PORT}`);
+  });
 } catch (err) {
   console.error("❌ DB connection error:", err?.message || err);
   process.exit(1);
 }
-// BEFORE (problem)
-// app.listen(3000, () => console.log('🚀 Server running on http://localhost:3000'));
-
-// AFTER (Render-friendly)
-const PORT = process.env.PORT || 3000;
-const HOST = '0.0.0.0';
-
-app.listen(PORT, HOST, () => {
-  console.log(`🚀 Server running on :${PORT}`);
-});
-
 
 /*// ===== In-memory stores (Phase 1) =====
 let users = [];
