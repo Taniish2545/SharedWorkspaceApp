@@ -16,3 +16,8 @@
     "nanoid": "^5.1.5"
   }
 }
+{
+  "type": "module",
+  "scripts": { "start": "node server.js" }
+}
+
