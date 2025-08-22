@@ -1,1 +1,121 @@
 
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shared Workspace – Search</title>
+
+  <!-- Link to external CSS for page styling -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Link to external JavaScript that handles search functionality -->
+  <script defer src="app.js"></script>
+</head>
+
+<!-- When the page loads, it will call the searchWorkspaces function -->
+<body onload="App.loadAllWorkspaces()">
+
+  <!-- Top navigation bar -->
+  <header>
+    <div class="container">
+      <div class="brand">Shared Workspace</div>
+      <nav>
+        <ul>
+          <!-- Navigation links -->
+          <li><a href="index.html">Home</a></li>
+          <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main content section -->
+  <main>
+    <div class="container">
+      <section class="hero">
+  <h1>Available workspaces</h1>
+  <p>Rate, review, and sort results.</p>
+
+  <!-- SORT + FILTERS together -->
+  <div class="toolbar">
+  <div class="sort">
+    <label for="sort">Sort:</label>
+    <select id="sort" onchange="App.searchWorkspaces()">
+      <option value="">None</option>
+      <option value="rating-desc">Rating ↓</option>
+      <option value="rating-asc">Rating ↑</option>
+      <option value="date-asc">Availability ↑</option>
+      <option value="date-desc">Availability ↓</option>
+      <option value="price-asc">Price ↑</option>
+      <option value="price-desc">Price ↓</option>
+    </select>
+  </div>
+  <button id="openFilters" class="button"
+        onclick="document.getElementById('filtersModal').style.display='flex'">
+  Filters
+</button>
+
+</div>
+
+
+  <!-- Results list -->
+  <ul id="results"></ul>
+</section>
+
+    </div>
+  </main>
+
+  <!-- Footer section -->
+  <footer>
+    <div class="container">© 2025 Shared Workspace • Phase 1</div>
+  </footer>
+  
+<!-- Workspace Details Modal -->
+<div id="wsDetailsModal" class="modal" style="display:none;
+     position:fixed; top:0; left:0; width:100%; height:100%;
+     background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center;">
+  <div class="modal-content" style="background:white; padding:20px; border-radius:8px; width:400px; max-width:90%;">
+    <span onclick="closeWsDetails()" style="float:right;cursor:pointer;font-size:20px;">&times;</span>
+    <h2>Workspace Details</h2>
+    <div id="wsDetails"></div>
+  </div>
+</div>
+
+<!-- Filters Modal -->
+<div id="filtersModal" class="modal" style="display:none; align-items:center; justify-content:center;">
+  <div class="modal-content" style="background:#fff; padding:20px; border-radius:12px; width:90%; max-width:720px;">
+    <span id="closeFilters" class="close" style="float:right;cursor:pointer;font-size:20px;">&times;</span>
+    <h2>Search Filters</h2>
+
+    <!-- Use SAME id + field names so app.js continues to work -->
+    <form id="searchForm" onsubmit="return false;">
+      <div class="filters-grid">
+        <input name="address" placeholder="Address" />
+        <input name="neighborhood" placeholder="Neighborhood" />
+        <input name="sqft" type="number" placeholder="Min Sqft" />
+
+        <label class="check"><input type="checkbox" name="parking" value="true" /> Parking</label>
+        <label class="check"><input type="checkbox" name="transit" value="true" /> Public Transport</label>
+
+        <input name="seats" type="number" placeholder="Min Seats" />
+        <label class="check"><input type="checkbox" name="smoking" value="true" /> Smoking allowed</label>
+
+        <input name="availableFrom" type="date" />
+        <select name="term">
+          <option value="">-- Term --</option>
+          <option>Daily</option><option>Weekly</option><option>Monthly</option><option>Yearly</option>
+        </select>
+
+        <input name="price" type="number" placeholder="Max Price ($)" />
+      </div>
+
+      <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+        <button type="button" id="resetFilters" class="button">Reset</button>
+        <button type="submit" id="applyFilters" class="button primary">Apply</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>
