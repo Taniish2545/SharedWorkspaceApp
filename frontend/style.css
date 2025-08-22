@@ -1,1 +1,350 @@
+/* --- Reset / base --- */
+/* Apply box-sizing to all elements, remove default margin/padding */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+/* Ensure html and body take up full height */
+html, body { height: 100%; }
+/* Set default font, background color, and text color */
+body { font-family: system-ui, Arial, sans-serif; background: #f6f7f9; color: #111; }
+
+/* --- Layout helpers --- */
+/* Center content and limit maximum width */
+.container { max-width: 1080px; margin: 0 auto; padding: 16px; }
+
+/* --- Header / nav --- */
+/* Header background and text color */
+header { background: #0d1117; color: #fff; }
+/* Align brand and navigation horizontally */
+header .container { display: flex; align-items: center; justify-content: space-between; }
+/* Brand text style */
+.brand { font-weight: 700; letter-spacing: .2px; }
+/* Remove bullet points, space out nav items */
+nav ul { list-style: none; display: flex; gap: 14px; }
+/* Navigation link styles */
+nav a { color: #cbd5e1; text-decoration: none; padding: 8px 10px; border-radius: 8px; }
+/* Hover effect for navigation links */
+nav a:hover { background: #1f2937; color: #fff; }
+
+/* --- Main / hero card --- */
+/* Add vertical padding to main content */
+main { padding: 32px 0; }
+/* Style the hero (main card) container */
+.hero { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 28px; }
+/* Heading style inside hero */
+.hero h1 { font-size: 32px; margin-bottom: 10px; }
+/* Paragraph style inside hero */
+.hero p { color: #4b5563; margin-bottom: 16px; }
+
+/* --- Buttons --- */
+/* Align action buttons and allow wrapping */
+.actions { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+/* General button style */
+.button { display: inline-block; padding: 10px 14px; border-radius: 10px; text-decoration: none; border: 1px solid #e5e7eb; background: #fff; color: #111; }
+/* Primary button with blue background */
+.button.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+/* Button hover effect */
+.button:hover { opacity: .9; }
+
+/* --- Footer --- */
+/* Footer border and background */
+footer { border-top: 1px solid #e5e7eb; background: #fff; }
+/* Footer text style and alignment */
+footer .container { color: #6b7280; padding: 16px; text-align: center; }
+
+/* ============================= */
+/* Centered layouts (forms/home) */
+/* ============================= */
+
+/* --- Home page centered hero --- */
+/* Vertically and horizontally center the home hero block */
+.center-home {
+  min-height: calc(100vh - 160px); /* Leaves space for header + footer (~160px total) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Limit width of hero section on home */
+.center-home .hero {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+/* Center action buttons on home */
+.center-home .actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* --- Signup/login/workspace form centering --- */
+/* Vertically and horizontally center form sections */
+.center-form {
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Slightly wider hero card for workspace form */
+.center-form .hero {
+  width: 100%;
+  max-width: 520px; /* wider than home hero */
+}
+/* Form layout:*
+/* Modal styles */
+.modal {
+  display: none; 
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+.modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+}
+.close {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+/* Fix signup/login form layout */
+.hero form {
+  display: grid;
+  grid-template-columns: 1fr;   /* stack fields vertically */
+  gap: 14px;                    /* space between fields */
+}
+
+/* Make inputs & selects take full width */
+.hero form input,
+.hero form select,
+.hero form button {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Style the button row */
+.hero form .actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+}
+/* Toolbar inside the hero: Sort (left) + Filters (right) */
+.hero .toolbar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 16px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+/* Sort looks compact */
+.hero .toolbar .sort label { margin-right: 8px; font-weight: 600; }
+.hero .toolbar .sort select {
+  min-width: 140px;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+/* Filters grid */
+.hero .filters {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(140px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.hero .filters input,
+.hero .filters select,
+.hero .filters button {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+}
+
+/* Checkboxes inline and compact */
+.hero .filters .check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.hero .filters input[type="checkbox"] { width: auto; }
+
+/* Keep the Search button natural width and left-aligned */
+.hero .filters button[type="submit"] {
+  width: auto;
+  justify-self: start;
+}
+
+/* Results spacing */
+#results { margin-top: 12px; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .hero .filters { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+}
+@media (max-width: 640px) {
+  .hero .toolbar { grid-template-columns: 1fr; }
+  .hero .filters { grid-template-columns: 1fr; }
+}
+.hero .toolbar #openFilters { width: auto; }
+/* ===== Filters Modal — layout & centering ===== */
+.modal {
+  /* you already toggle display via JS */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  padding: 24px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+}
+.modal-content .close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ===== Filters form — organized grid ===== */
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(200px, 1fr));
+  grid-auto-flow: row dense;
+  gap: 12px 16px;
+  align-items: end;           /* bottoms line up nicely */
+  margin-top: 6px;
+}
+.filters-grid input,
+.filters-grid select {
+  width: 100%;
+  height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+}
+.filters-grid input[type="checkbox"] {
+  width: auto;
+  height: auto;
+}
+.filters-grid .check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;              /* aligns with text inputs */
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+/* Make Address span two columns on large screens */
+.filters-grid input[name="address"] {
+  grid-column: 1 / span 2;
+}
+
+/* Buttons row */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Keep the Filters button in the toolbar compact */
+.hero .toolbar #openFilters {
+  width: auto;
+}
+
+/* ===== Responsive tweaks ===== */
+@media (max-width: 1024px) {
+  .filters-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+  .filters-grid input[name="address"] { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .filters-grid { grid-template-columns: 1fr; }
+}
+/* Modal Overlay */
+#editModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* semi-transparent dark overlay */
+  display: none;                  /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal Content */
+#editModal form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 320px;
+  max-width: 500px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+}
+/* Modal overlay */
+#editModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;          /* hidden by default */
+  justify-content: center; 
+  align-items: center; 
+  z-index: 1000;
+}
+
+/* Modal box */
+#editModal form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 300px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+#editModal .modal-actions {
+  display: flex;
+  justify-content: center;   /* centers buttons */
+  gap: 12px;                 /* space between Save & Cancel */
+  margin-top: 12px;
+}
+
+#editModal button {
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
 
