@@ -1,1 +1,79 @@
 
+<!DOCTYPE html> <!-- Declares the document type and version of HTML -->
+<html lang="en"> <!-- Root element of the page, language set to English -->
+<head>
+  <meta charset="utf-8" /> <!-- Sets character encoding to UTF-8 for proper text display -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- Ensures responsive layout on all devices -->
+  <title>Shared Workspace – Sign Up</title> <!-- Title shown on the browser tab -->
+  
+  <!-- Linking external stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+</head>
+
+<body>
+  <!-- Header section containing brand name and navigation menu -->
+  <header>
+    <div class="container">
+      <div class="brand">Shared Workspace</div> <!-- Website brand/logo text -->
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li> <!-- Navigation link to Home page -->
+          <li><a href="login.html">Login</a></li> <!-- Navigation link to Login page -->
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main content area with a centered form -->
+  <main class="center-form">
+    <div class="container">
+      <section class="hero">
+        <h1>Create your account</h1> <!-- Main heading -->
+        <p>Register as an <strong>Owner</strong> to list spaces or as a <strong>Coworker</strong> to find one.</p> <!-- Form description -->
+
+        <!-- Sign-up form with onsubmit event linked to App.signup() function -->
+        <form id="signupForm">
+          
+          <!-- Full Name input -->
+          <label for="name">Full Name</label>
+          <input id="name" name="name" required />
+
+          <!-- Phone input with validation for exactly 10 digits -->
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" pattern="[0-9]{10}" placeholder="10 digits" required />
+
+          <!-- Email input field -->
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required />
+
+          <!-- Password input field -->
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required />
+
+          <!-- Role selection dropdown -->
+          <label for="role">Role</label>
+          <select id="role" name="role" required>
+            <option value="">Select role</option> <!-- Default option -->
+            <option value="owner">Owner</option> <!-- Option for space owners -->
+            <option value="coworker">Coworker</option> <!-- Option for people looking for spaces -->
+          </select>
+
+          <!-- Action buttons for submitting or going to login page -->
+          <div class="actions">
+            <button class="button primary" type="submit">Sign Up</button> <!-- Submit form button -->
+            <a class="button" href="login.html">Already have an account?</a> <!-- Link to login page -->
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer section -->
+  <footer>
+    <div class="container">© 2025 Shared Workspace • Phase 1</div> <!-- Copyright -->
+  </footer>
+  <script type="module" src="signup.js"></script>
+
+</body>
+</html>
