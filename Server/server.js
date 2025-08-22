@@ -47,8 +47,17 @@ try {
   console.error("❌ DB connection error:", err?.message || err);
   process.exit(1);
 }
+// BEFORE (problem)
+// app.listen(3000, () => console.log('🚀 Server running on http://localhost:3000'));
+
+// AFTER (Render-friendly)
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('API on :' + PORT));
+const HOST = '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Server running on :${PORT}`);
+});
+
 
 /*// ===== In-memory stores (Phase 1) =====
 let users = [];
