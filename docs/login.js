@@ -9,7 +9,7 @@ form.addEventListener("submit", async (e) => {
   const data = Object.fromEntries(new FormData(form));
 
   try {
-    const res = await fetch("http://localhost:3000/api/auth/login", {
+    const res = await fetch("https://sharedworkspaceapp.onrender.com", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
