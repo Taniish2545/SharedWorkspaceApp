@@ -219,3 +219,238 @@ async function loadProperties() {
     location.href = "login.html";
   }
 }
+// ===== Load Owner’s Properties (with Edit/Delete buttons) =====
+// ===== Load Owner’s Properties (with Edit/Delete buttons) =====
+async function loadMyProperties() {
+  const u = getUser();
+  if (!u || u.role !== "owner") {
+    alert("Only owners can view this page.");
+    location.href = "login.html";
+    return;
+  }
+
+  try {
+    const res = await fetch(${API_BASE}/api/properties?ownerId=${encodeURIComponent(u.id)});
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    const out = await res.json();
+    const list = document.getElementById("myProps");
+    list.innerHTML = "";
+
+    (out.data || []).forEach(p => {
+      const li = document.createElement("li");
+
+      // Property info
+      li.innerHTML = `
+        <strong>${p.address}</strong> – ${p.sqft} sqft
+        <button onclick="App.editProperty('${p._id}')">Edit</button>
+        <button onclick="deleteProperty('${p._id}')">Delete</button>
+      `;
+
+      // --- NEW: Show photos if available ---
+      if (p.photos && p.photos.length > 0) {
+        const photoDiv = document.createElement("div");
+        photoDiv.style.marginTop = "6px";
+
+        p.photos.forEach(url => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.style.width = "120px";
+          img.style.height = "90px";
+          img.style.objectFit = "cover";
+          img.style.marginRight = "6px";
+          img.style.borderRadius = "6px";
+          img.style.boxShadow = "0 1px 4px rgba(0,0,0,0.2)";
+          photoDiv.appendChild(img);
+        });
+
+        li.appendChild(photoDiv);
+      }
+
+      list.appendChild(li);
+    });
+
+  } catch (err) {
+    console.error("❌ Error loading owner properties:", err);
+    alert("Failed to load your properties. Please log in again.");
+    sessionStorage.clear();
+    location.href = "login.html";
+  }
+}
+
+
+async function addWorkspace(e) {
+  e.preventDefault();
+
+  const u = getUser();
+  if (!u || u.role !== "owner") {
+    return alert("Only owners can add workspaces.");
+  }
+
+  const data = {
+    property: document.getElementById("propertyId").value,  // ✅ matches HTML
+    type: document.getElementById("type").value,
+    seats: Number(document.getElementById("seats").value),
+    smoking: document.querySelector("#smoking")?.checked || false,
+    availableFrom: document.getElementById("availableFrom").value,
+    term: document.getElementById("term").value,
+    price: Number(document.getElementById("price").value),
+    owner: u.id
+  };
+
+  try {
+    const res = await fetch(${API_BASE}/api/workspaces, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    const out = await res.json();
+    if (out.success) {
+      alert("Workspace created!");
+      e.target.reset();
+      App.loadMyWorkspaces();
+    } else {
+      alert(out.message || "Failed to create workspace.");
+    }
+  } catch (err) {
+    console.error("❌ Workspace create error:", err);
+    alert("Something went wrong.");
+  }
+}
+
+
+
+// ===== Delete Property =====
+async function deleteProperty(id) {
+  if (!confirm("Are you sure you want to delete this property?")) return;
+
+  try {
+    const res = await fetch(${API_BASE}/api/properties/${id}, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    const out = await res.json();
+    if (out.success) {
+      alert("Property deleted successfully!");
+      loadMyProperties();  // refresh
+    } else {
+      alert(out.message || "Failed to delete property.");
+    }
+  } catch (err) {
+    console.error("❌ Delete error:", err);
+    alert("Something went wrong while deleting.");
+  }
+}
+function editProperty(id) {
+  fetch(${API_BASE}/api/properties/${id})
+    .then(res => res.json())
+    .then(out => {
+      if (!out.success) return alert("Failed to fetch property");
+
+      const p = out.data;
+      document.getElementById("editId").value = p._id;
+      document.getElementById("editAddress").value = p.address;
+      document.getElementById("editNeighborhood").value = p.neighborhood;
+      document.getElementById("editSqft").value = p.sqft;
+      document.getElementById("editParking").checked = p.parking;
+      document.getElementById("editTransit").checked = p.transit;
+
+      // Show modal
+      document.getElementById("editModal").style.display = "flex";
+    })
+    .catch(err => console.error("❌ Edit error:", err));
+}
+
+function closeModal() {
+  document.getElementById("editModal").style.display = "none";
+}
+
+async function savePropertyUpdate(e) {
+  e.preventDefault();
+  const id = document.getElementById("editId").value;
+  const data = {
+    address: document.getElementById("editAddress").value,
+    neighborhood: document.getElementById("editNeighborhood").value,
+    sqft: document.getElementById("editSqft").value,
+    parking: document.getElementById("editParking").checked,
+    transit: document.getElementById("editTransit").checked,
+  };
+
+  try {
+    const res = await fetch(${API_BASE}/api/properties/${id}, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    const out = await res.json();
+    if (out.success) {
+      alert("Property updated!");
+      closeModal();
+      loadMyProperties();
+    } else {
+      alert(out.message || "Failed to update.");
+    }
+  } catch (err) {
+    console.error("❌ Update error:", err);
+    alert("Something went wrong.");
+  }
+}
+
+
+// ===== Open Modal with Existing Property Data =====
+async function updateProperty(id) {
+  try {
+    const res = await fetch(${API_BASE}/api/properties/${id});
+    const out = await res.json();
+    if (!out.success) return alert("Failed to load property details.");
+
+    const p = out.data;
+    document.getElementById("editId").value = p._id || p.id;
+    document.getElementById("editAddress").value = p.address;
+    document.getElementById("editNeighborhood").value = p.neighborhood;
+    document.getElementById("editSqft").value = p.sqft;
+    document.getElementById("editParking").checked = !!p.parking;
+    document.getElementById("editTransit").checked = !!p.transit;
+
+    document.getElementById("editModal").style.display = "block";
+  } catch (err) {
+    console.error("❌ Update error:", err);
+    alert("Could not load property for editing.");
+  }
+}
+
+// ===== Save Update =====
+async function savePropertyUpdate(e) {
+  e.preventDefault();
+  const id = document.getElementById("editId").value;
+  const data = {
+    address: document.getElementById("editAddress").value,
+    neighborhood: document.getElementById("editNeighborhood").value,
+    sqft: document.getElementById("editSqft").value,
+    parking: document.getElementById("editParking").checked,
+    transit: document.getElementById("editTransit").checked
+  };
+
+  try {
+    const res = await fetch(${API_BASE}/api/properties/${id}, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const out = await res.json();
+    if (out.success) {
+      alert("Property updated successfully!");
+      document.getElementById("editModal").style.display = "none";
+      loadMyProperties(); // refresh list
+    } else {
+      alert(out.message || "Failed to update property.");
+    }
+  } catch (err) {
+    console.error("❌ Save update error:", err);
+    alert("Could not save update.");
+  }
+}
