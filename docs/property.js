@@ -8,7 +8,7 @@ async function loadProperties() {
   }
 
   try {
-    const res = await fetch("http://localhost:3000/api/properties", {
+    const res = await fetch("https://sharedworkspaceapp.onrender.com", {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}` // ✅ send token
