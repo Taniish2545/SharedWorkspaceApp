@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://sharedworkspaceapp.onrender.com';
 
 // session helpers
 function getUser() { try { return JSON.parse(sessionStorage.getItem('user')); } catch { return null; } }
