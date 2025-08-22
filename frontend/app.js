@@ -704,3 +704,308 @@ async function saveWorkspaceUpdate(e) {
     console.error("❌ Save update error:", err);
   }
 }
+// Load owner’s properties into the photo form dropdown
+async function loadOwnerPropertiesForPhoto() {
+  const u = getUser();
+  if (!u || u.role !== "owner") return;
+
+  const res = await fetch(`${API_BASE}/api/properties?owner=${encodeURIComponent(u._id || u.id)}`);
+  const out = await res.json();
+
+  const select = document.getElementById("propId");
+  if (!select) return;
+
+  select.innerHTML = '<option value="">-- Select one of your properties --</option>';
+  (out.data || []).forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p._id || p.id;
+    opt.textContent = `${p.address} (${p.neighborhood})`;
+    select.appendChild(opt);
+  });
+}
+// Load owner’s workspaces into the photo form dropdown
+async function loadOwnerWorkspacesForPhoto() {
+  const u = getUser();
+  if (!u || u.role !== "owner") return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/workspaces?owner=${encodeURIComponent(u.id)}`);
+    const out = await res.json();
+
+    const select = document.getElementById("wsId");
+    if (!select) return;
+
+    select.innerHTML = '<option value="">-- Select one of your workspaces --</option>';
+    (out.data || []).forEach(ws => {
+      const opt = document.createElement("option");
+      opt.value = ws._id;
+      opt.textContent = `${ws.type} • ${ws.seats} seats • $${ws.price} (${ws.property?.address || "No property"})`;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("❌ Error loading workspaces for photo:", err);
+  }
+}
+
+
+
+// === GLOBAL Search Workspaces Function ===
+async function searchWorkspaces(e) {
+  if (e) e.preventDefault();
+
+  const form = e ? e.target : document.getElementById("searchForm");
+  const params = new URLSearchParams(new FormData(form)).toString();
+
+  try {
+    const sort = document.getElementById("sort")?.value || "";
+    const res = await fetch(`${API_BASE}/api/workspaces?${params}${sort ? `&sort=${sort}` : ""}`);
+    const out = await res.json();
+
+    const list = document.getElementById("results");
+
+    if (!out.data || out.data.length === 0) {
+      list.innerHTML = "<li>No matching workspaces found.</li>";
+      return;
+    }
+
+    list.innerHTML = out.data
+      .map(ws => `
+        <li style="padding:12px 0;border-bottom:1px solid #eee;display:flex;
+                   justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <strong>${ws.type}</strong> • Seats: ${ws.seats} • $${ws.price} • ${ws.term}
+            <br/><small>${ws.property?.address || "No address"}</small>
+            <br/>⭐ ${avg(ws.ratings)} (${ws.ratings?.length || 0} ratings)
+          </div>
+          <div class="actions" style="gap:6px">
+            <button onclick="viewWorkspace('${ws._id}')">View Details</button>
+            <button onclick="rateWorkspace('${ws._id}', 5)">Rate 5⭐</button>
+          </div>
+        </li>
+      `)
+      .join("");
+  } catch (err) {
+    console.error("Search failed", err);
+  }
+}
+
+// Helper: average rating
+function avg(ratings = []) {
+  if (!ratings || !ratings.length) return "No ratings yet";
+  const sum = ratings.reduce((a, r) => a + r.value, 0);
+  return (sum / ratings.length).toFixed(1);
+}
+async function rateWorkspace(id, value) {
+  const u = getUser();
+  if (!u) return alert("You must be logged in to rate");
+
+  try {
+    const res = await fetch(`${API_BASE}/api/workspaces/${id}/rate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value, userId: u.id })
+    });
+
+    const out = await res.json();
+    if (out.success) {
+      alert("Thanks for rating!");
+      App.searchWorkspaces(); // reload with updated ratings
+    } else {
+      alert(out.message || "Failed to rate");
+    }
+  } catch (err) {
+    console.error("❌ Rate error", err);
+  }
+}
+async function rateWorkspace(wsId, value) {
+  const u = getUser(); // logged in coworker
+  if (!u) return alert("You must be logged in.");
+
+  const res = await fetch(`${API_BASE}/api/workspaces/${wsId}/rate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value, userId: u.id })
+  });
+  const out = await res.json();
+  if (out.success) {
+    alert("Rating saved!");
+    viewWorkspace(wsId); // reload details modal
+  } else {
+    alert(out.message || "Failed to save rating.");
+  }
+}
+
+async function reviewWorkspace(wsId) {
+  const u = getUser();
+  if (!u) return alert("You must be logged in.");
+  
+  const text = prompt("Enter your review:");
+  if (!text) return;
+
+  const res = await fetch(`${API_BASE}/api/workspaces/${wsId}/review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, userId: u.id })
+  });
+  const out = await res.json();
+  if (out.success) {
+    alert("Review submitted!");
+    viewWorkspace(wsId);
+  } else {
+    alert(out.message || "Failed to submit review.");
+  }
+}
+
+
+// Show workspace details in modal (with ratings + reviews)
+async function viewWorkspace(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/workspaces/${id}`);
+    const out = await res.json();
+
+    if (!out.success) {
+      return alert("Workspace not found");
+    }
+
+    const ws = out.data;
+
+    // ✅ Calculate average rating
+    const avgRating = ws.ratings?.length
+      ? (ws.ratings.reduce((a, r) => a + r.value, 0) / ws.ratings.length).toFixed(1)
+      : "No ratings yet";
+
+    // ✅ Render reviews
+    const reviewsHtml = ws.reviews?.length
+      ? ws.reviews.map(r => `<li>${r.text}</li>`).join("")
+      : "<li>No reviews yet</li>";
+
+    const container = document.getElementById("wsDetails");
+    container.innerHTML = `
+      <p><strong>Type:</strong> ${ws.type}</p>
+      <p><strong>Seats:</strong> ${ws.seats}</p>
+      <p><strong>Price:</strong> $${ws.price}</p>
+      <p><strong>Lease Term:</strong> ${ws.term}</p>
+      <p><strong>Smoking:</strong> ${ws.smoking ? "Yes" : "No"}</p>
+      <p><strong>Available From:</strong> ${ws.availableFrom || "Not specified"}</p>
+
+      <h4>Property</h4>
+      <p><strong>Address:</strong> ${ws.property?.address || "N/A"}</p>
+      <p><strong>Neighborhood:</strong> ${ws.property?.neighborhood || "N/A"}</p>
+      <p><strong>Sqft:</strong> ${ws.property?.sqft || "N/A"}</p>
+      <p><strong>Parking:</strong> ${ws.property?.parking ? "Yes" : "No"}</p>
+      <p><strong>Transit:</strong> ${ws.property?.transit ? "Yes" : "No"}</p>
+
+      <h4>Owner</h4>
+      <p><strong>Name:</strong> ${ws.owner?.name || "N/A"}</p>
+      <p><strong>Email:</strong> ${ws.owner?.email || "N/A"}</p>
+      <p><strong>Phone:</strong> ${ws.owner?.phone || "N/A"}</p>
+
+      <h4>Ratings</h4>
+      <p><strong>Average Rating:</strong> ${avgRating}</p>
+      <div>
+        <button onclick="rateWorkspace('${ws._id}', 1)">⭐</button>
+        <button onclick="rateWorkspace('${ws._id}', 2)">⭐⭐</button>
+        <button onclick="rateWorkspace('${ws._id}', 3)">⭐⭐⭐</button>
+        <button onclick="rateWorkspace('${ws._id}', 4)">⭐⭐⭐⭐</button>
+        <button onclick="rateWorkspace('${ws._id}', 5)">⭐⭐⭐⭐⭐</button>
+      </div>
+
+      <h4>Reviews</h4>
+      <ul>${reviewsHtml}</ul>
+      <button onclick="reviewWorkspace('${ws._id}')">Add Review</button>
+    `;
+
+    document.getElementById("wsDetailsModal").style.display = "flex";
+
+  } catch (err) {
+    console.error("❌ View workspace error:", err);
+    alert("Something went wrong loading details");
+  }
+}
+
+
+async function loadMyProperties() {
+  const u = getUser();
+  if (!u || u.role !== "owner") return alert("Login as owner first");
+
+  try {
+    const res = await fetch(`${API_BASE}/api/properties?owner=${encodeURIComponent(u._id || u.id)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const out = await res.json();
+
+    const list = document.getElementById("myProps");
+    list.innerHTML = (out.data || []).map(p => `
+      <li>
+        ${p.address} – ${p.sqft} sqft
+        <button onclick="App.editProperty('${p._id || p.id}')">Edit</button>
+        <button onclick="App.deleteProperty('${p._id || p.id}')">Delete</button>
+      </li>
+    `).join("");
+  } catch (err) {
+    console.error("❌ loadMyProperties error:", err);
+  }
+}
+
+// Filters modal wiring
+document.addEventListener("DOMContentLoaded", () => {
+  const modal   = document.getElementById("filtersModal");
+  const openBtn = document.getElementById("openFilters");
+  const closeBtn= document.getElementById("closeFilters");
+  const form    = document.getElementById("searchForm");
+  const reset   = document.getElementById("resetFilters");
+
+  // only require these to OPEN
+  if (!openBtn || !modal) return;
+
+  const open  = () => modal.style.display = "flex";
+  const close = () => modal.style.display = "none";
+
+  openBtn.addEventListener("click", open);
+  closeBtn?.addEventListener("click", close);
+  modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+  if (form) {
+   reset?.addEventListener("click", () => {
+  form.reset();            // clear filter fields
+  App.searchWorkspaces();  // reload all workspaces (no filters)
+});
+
+    form.addEventListener("submit", (e) => {
+      App.searchWorkspaces(e); // uses #searchForm values + current Sort
+      close();
+    });
+  }
+});
+
+
+// Close modal
+function closeWsDetails() {
+  document.getElementById("wsDetailsModal").style.display = "none";
+}
+
+// expose everything used by HTML
+window.App = {
+  signup, login, logout,
+  addProperty, addWorkspace,
+  addPropertyPhoto, addWorkspacePhoto,
+  loadOwnerPropertiesForWorkspace,
+  loadOwnerPropertiesForPhoto,
+  loadOwnerWorkspacesForPhoto,
+  loadMyProperties, editProperty, updateProperty, savePropertyUpdate, deleteProperty,
+  loadMyWorkspaces, updateWorkspace, saveWorkspaceUpdate, deleteWorkspace,
+  loadAllWorkspaces, searchWorkspaces,
+  closeModal, closeWsDetails
+};
+
+// modal outside-click close
+window.onclick = function(event) {
+  const modal = document.getElementById('editModal');
+  if (modal && event.target === modal) {
+    closeModal();
+  }
+};
+
+window.rateWorkspace = rateWorkspace;
+window.reviewWorkspace = reviewWorkspace;
