@@ -47,6 +47,8 @@ try {
   console.error("❌ DB connection error:", err?.message || err);
   process.exit(1);
 }
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log('API on :' + PORT));
 
 /*// ===== In-memory stores (Phase 1) =====
 let users = [];
