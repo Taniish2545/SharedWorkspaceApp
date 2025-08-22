@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shared Workspace – Login</title>
+
+  <!-- Link to external CSS for styling -->
+  <link rel="stylesheet" href="style.css" />
+
+
+</head>
+
+<body>
+  <!-- Header with brand and navigation menu -->
+  <header>
+    <div class="container">
+      <div class="brand">Shared Workspace</div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="signup.html">Sign Up</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main content area with centered form -->
+  <main class="center-form">
+    <div class="container">
+      <section class="hero">
+        <!-- Welcome message and login instructions -->
+        <h1>Welcome back</h1>
+        <p>Log in with your email and the role you registered with.</p>
+
+        <!-- Login form: handles email and role selection -->
+        <form id="loginForm">
+          <!-- Email input -->
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required />
+
+          <!-- Password input -->
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required />
+
+          <!-- Role dropdown (Owner or Coworker) -->
+          <label for="role">Role</label>
+          <select id="role" name="role" required>
+            <option value="">Select role</option>
+            <option value="owner">Owner</option>
+            <option value="coworker">Coworker</option>
+          </select>
+
+          <!-- Action buttons: Login or go to sign up -->
+          <div class="actions">
+            <button class="button primary" type="submit">Login</button>
+            <a class="button" href="signup.html">Create account</a>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer section -->
+  <footer>
+    <div class="container">© 2025 Shared Workspace • Phase 1</div>
+  </footer>
+  <script type="module" src="login.js"></script>
+</body>
+</html>
