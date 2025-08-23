@@ -1,47 +1,40 @@
-// login.js (safe, no fancy syntax)
-const API_BASE = (window.location.hostname === "localhost")
-  ? "http://localhost:3000"
-  : "https://sharedworkspaceapp.onrender.com"; // <- your Render URL
+// login.js
+const form = document.getElementById("loginForm");
 
-const LOGIN_URL = API_BASE.replace(/\/$/, "") + "/api/auth/login";
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  console.log("✅ Login button clicked");
 
-document.addEventListener("DOMContentLoaded", function () {
-  var form = document.getElementById("loginForm");
-  if (!form) { console.error("loginForm not found"); return; }
+  const data = Object.fromEntries(new FormData(form));
 
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
+  try {
+    const res = await fetch("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-    var data = Object.fromEntries(new FormData(form).entries());
-    try {
-      var res = await fetch(LOGIN_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-
-      var ct = res.headers.get("content-type") || "";
-      if (ct.indexOf("application/json") === -1) {
-        var text = await res.text();
-        alert("Unexpected response " + res.status + ": " + text.slice(0, 120));
-        return;
-      }
-
-      var out = await res.json();
-      if (!res.ok || out.success === false) {
-        alert(out.message || ("Login failed (" + res.status + ")"));
-        return;
-      }
-
-      if (out.data && out.data.token) {
-        sessionStorage.setItem("token", out.data.token);
-      }
-
-      alert(out.message || "Login successful!");
-      window.location.href = "index.html"; // change if your dashboard file is different
-    } catch (err) {
-      console.error(err);
-      alert("Network error. Check console/Network tab.");
+    if (!res.ok) {
+      throw new Error(HTTP ${res.status});
     }
-  });
+
+    const out = await res.json();
+    alert(out.message || out.msg);
+
+    if (out.success) {
+      // Save user + token in localStorage
+      sessionStorage.setItem("user", JSON.stringify(out.data.user));
+      sessionStorage.setItem("token", out.data.token);
+
+      // ✅ Redirect based on role
+      if (out.data.user.role === "owner") {
+        window.location.href = "owner-property.html"; 
+      } else {
+        window.location.href = "search.html"; 
+      }
+    }
+  } catch (err) {
+    console.error("❌ Login error:", err);
+    alert("Login failed. Please check your credentials.");
+  }
 });
