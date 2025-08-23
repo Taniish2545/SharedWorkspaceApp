@@ -1,4 +1,3 @@
-
 async function loadProperties() {
   const token = localStorage.getItem("token"); // 🔑 read saved JWT
   if (!token) {
@@ -8,22 +7,22 @@ async function loadProperties() {
   }
 
   try {
-    const res = await fetch("https://sharedworkspaceapp.onrender.com", {
+    const res = await fetch("http://localhost:3000/api/properties", {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}` // ✅ send token
+        "Authorization": Bearer ${token} // ✅ send token
       }
     });
 
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
+      throw new Error(HTTP ${res.status});
     }
 
     const out = await res.json();
 
     const list = document.getElementById("myprops");
     list.innerHTML = out.data.map(
-      p => `<li>${p.address} – ${p.sqft} sqft</li>`
+      p => <li>${p.address} – ${p.sqft} sqft</li>
     ).join("");
   } catch (err) {
     console.error("❌ Error loading properties:", err);
