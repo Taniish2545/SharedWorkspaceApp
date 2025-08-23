@@ -1,4 +1,3 @@
-
 import express from "express";
 import Property from "../models/property.js";   // your schema
 
