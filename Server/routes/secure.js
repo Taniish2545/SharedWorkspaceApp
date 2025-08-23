@@ -1,4 +1,3 @@
-
 // Server/routes/secure.js
 import express from 'express';
 import { requireAuth, mustBeOwner } from '../middleware/auth.js';
